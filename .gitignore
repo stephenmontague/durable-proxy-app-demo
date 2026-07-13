@@ -1,0 +1,19 @@
+# Maven build output
+target/
+**/target/
+
+# Node / Next.js (management-ui)
+**/node_modules/
+management-ui/.next/
+management-ui/out/
+
+# Runtime data + logs (created by `just up` and the apps)
+data/
+logs/
+*.log
+
+# Local env overrides
+**/.env.local
+
+# OS / editor cruft
+.DS_Store

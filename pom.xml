@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.proxyapp</groupId>
+  <artifactId>proxy-app-demo</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>proxy-app-demo</name>
+  <description>Reference cloud + edge apps (and the Switchyard UI) for the durable Cloud-Edge proxy</description>
+
+  <!-- Aggregation only — each module keeps spring-boot-starter-parent as its parent.
+       These apps depend on the proxy only at RUNTIME (Temporal names + JSON, HTTP/TCP/FTP),
+       never at build time, so they compile with no proxy source present. -->
+  <modules>
+    <module>dummy-cloud</module>
+    <module>dummy-edge</module>
+  </modules>
+</project>
