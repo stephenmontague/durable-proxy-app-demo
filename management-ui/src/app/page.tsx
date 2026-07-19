@@ -1,5 +1,7 @@
 "use client";
 
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 import { FlowDiagram } from "@/components/flow-diagram";
 import { ConnectionsPanel } from "@/components/dashboard/connections-panel";
 import { ControlsPanel } from "@/components/dashboard/controls-panel";
@@ -8,14 +10,36 @@ import { StatusPanel } from "@/components/dashboard/status-panel";
 import { FeedTable } from "@/components/feed/feed-table";
 import { Panel } from "@/components/ui-custom/panel";
 import { usePoll } from "@/hooks/use-poll";
-import type { ControlStateResponse, FeedItem } from "@/lib/types";
+import { checkSessions } from "@/lib/actions";
+import type { ControlStateResponse, DeviceSessionStatus, FeedItem } from "@/lib/types";
 
 export default function ConsolePage() {
-  // Live proxy status (applied state + liveness) from Temporal. Slower cadence keeps the per-poll
-  // getState Query (a billable Action) modest; config editing lives on the Config tab (H2-backed).
-  const control = usePoll<ControlStateResponse>("/api/control/state", 5000);
+  // Live proxy status (applied state + liveness) from Temporal. Each poll is a getState Query — a
+  // billable Action — so the cadence is deliberately slow; link status is refreshed on demand via
+  // the "Check Now" button below (the checkSessions Update), not by fast polling.
+  const control = usePoll<ControlStateResponse>("/api/control/state", 30000);
   const feed = usePoll<{ items: FeedItem[] }>("/api/temporal/feed", 4000);
   const cloud = usePoll<{ confirms: unknown[] }>("/api/demo/confirms", 10000);
+
+  // On-demand live link probe (ground truth from the proxy's sockets), overlaid on the polled state.
+  const [liveSessions, setLiveSessions] = useState<DeviceSessionStatus[] | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [lastChecked, setLastChecked] = useState<string | null>(null);
+
+  const checkNow = useCallback(async () => {
+    setChecking(true);
+    try {
+      const res = await checkSessions();
+      setLiveSessions(res.sessions);
+      setLastChecked(res.reportedAt ?? new Date().toISOString());
+    } catch (e) {
+      toast.error("Live link check failed", {
+        description: e instanceof Error ? e.message : String(e),
+      });
+    } finally {
+      setChecking(false);
+    }
+  }, []);
 
   const state = control.data?.state;
   const liveness = control.data?.liveness;
@@ -48,9 +72,21 @@ export default function ConsolePage() {
         {state && <ListenersPanel state={state} />}
       </div>
 
-      {state?.applied?.sessions && state.applied.sessions.length > 0 && (
-        <ConnectionsPanel sessions={state.applied.sessions} />
-      )}
+      {(() => {
+        // Prefer the on-demand live probe once one has run; otherwise the polled last-reported state.
+        const sessions = liveSessions ?? state?.applied?.sessions ?? [];
+        const hasPersistentDevice =
+          state?.devices?.some((d) => d.tcpSession?.mode === "PERSISTENT") ?? false;
+        if (sessions.length === 0 && !hasPersistentDevice) return null;
+        return (
+          <ConnectionsPanel
+            sessions={sessions}
+            onCheckNow={checkNow}
+            checking={checking}
+            lastChecked={lastChecked}
+          />
+        );
+      })()}
 
       <Panel legend="Recent traffic">
         <FeedTable items={(feed.data?.items ?? []).slice(0, 8)} compact />
