@@ -54,8 +54,9 @@ public class ConfirmPusher {
         schedule("ECHO", payload, p -> sendHttpTo(requestPath, p), 1);
     }
 
-    public void pushTcpConfigAck(String payload) {
-        schedule("CONFIG_ACK", payload, this::sendTcp, 1);
+    /** Echo an inbound cloud→edge delivery back to the proxy's configured TCP confirm port. */
+    public void pushTcpEcho(String payload) {
+        schedule("TCP_ECHO", payload, this::sendTcp, 1);
     }
 
     public void pushFtpReportUpload(String filename, String payload) {
