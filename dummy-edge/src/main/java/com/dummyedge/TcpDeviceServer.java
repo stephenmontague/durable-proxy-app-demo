@@ -1,8 +1,5 @@
 package com.dummyedge;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.SmartLifecycle;
@@ -16,8 +13,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * TCP channel of the device: receives CONFIG_UPDATE on its listen port, acks, and
- * auto-pushes the paired CONFIG_ACK to the proxy's TCP ingress port.
+ * TCP channel of the device: acks whatever it receives on its listen port, then echoes the same
+ * payload back to the proxy's configured TCP confirm port — so a type defined purely by config
+ * (the built-in CONFIG_UPDATE/CONFIG_ACK pair, or any custom type) round-trips with no code change.
  */
 @Component
 public class TcpDeviceServer implements SmartLifecycle {
@@ -27,7 +25,6 @@ public class TcpDeviceServer implements SmartLifecycle {
     private final EdgeProperties properties;
     private final ReceivedStore receivedStore;
     private final ConfirmPusher confirmPusher;
-    private final ObjectMapper mapper = new ObjectMapper();
     private final ExecutorService executor = Executors.newCachedThreadPool(r -> {
         Thread t = new Thread(r, "edge-tcp");
         t.setDaemon(true);
@@ -100,11 +97,7 @@ public class TcpDeviceServer implements SmartLifecycle {
         socket.getOutputStream().write(ack);
         socket.getOutputStream().flush();
 
-        JsonNode body = mapper.readTree(payload);
-        ObjectNode confirm = mapper.createObjectNode();
-        confirm.set("configId", body.get("configId"));
-        confirm.put("status", "APPLIED");
-        confirmPusher.pushTcpConfigAck(confirm.toString());
+        confirmPusher.pushTcpEcho(payload);
     }
 
     private static byte[] delimiterBytes(String s) {
