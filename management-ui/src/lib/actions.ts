@@ -1,6 +1,6 @@
 "use client";
 
-import type { ControlStateResponse } from "@/lib/types";
+import type { CheckSessionsResponse, ControlStateResponse } from "@/lib/types";
 
 /** Outcome of a config change: the cloud signals the workflow and reports accept/reject synchronously. */
 export interface ConfigOutcome {
@@ -43,4 +43,16 @@ export async function fetchControlState(): Promise<ControlStateResponse> {
   const json = await res.json();
   if (!res.ok) throw new Error(json?.error ?? res.statusText);
   return json as ControlStateResponse;
+}
+
+/**
+ * On-demand LIVE link probe for the Dashboard's "Check Now" button. Invokes the proxy-control
+ * workflow's checkSessions Update (one billable Action) — ground truth read straight from the
+ * proxy's sockets, not the polled read model. Throws if the proxy is unreachable.
+ */
+export async function checkSessions(): Promise<CheckSessionsResponse> {
+  const res = await fetch("/api/control/check-sessions", { method: "POST" });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json?.error ?? res.statusText);
+  return json as CheckSessionsResponse;
 }

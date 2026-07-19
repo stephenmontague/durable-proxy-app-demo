@@ -164,6 +164,15 @@ export interface ControlStateResponse {
   liveness: WorkerLiveness;
 }
 
+/**
+ * Result of an on-demand live link probe — the `checkSessions` Update reads each device's current
+ * persistent-TCP state straight from the proxy's sockets (ground truth, not the polled read model).
+ */
+export interface CheckSessionsResponse {
+  sessions: DeviceSessionStatus[];
+  reportedAt: string | null;
+}
+
 /** One row in the activity feed — a DeliverToEdge workflow or DeliverToCloud activity. */
 export interface FeedItem {
   id: string;

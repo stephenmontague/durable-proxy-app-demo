@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Led } from "@/components/ui-custom/led";
 import { Panel } from "@/components/ui-custom/panel";
 import { formatClock } from "@/lib/format";
@@ -18,13 +19,40 @@ function sessionLed(state: string): LedState {
 }
 
 /**
- * The connection table: per-device persistent-link health the proxy reports back via
- * AppliedStatus.sessions. Heartbeats stay out of Temporal, so this reflects the last
- * UP/DOWN/CONNECTING transition the proxy signaled, not every beat.
+ * The connection table: per-device persistent-link health. By default this shows the state the proxy
+ * pushed on its last UP/DOWN/CONNECTING transition (via AppliedStatus.sessions — heartbeats stay out
+ * of Temporal). "Check Now" fires the checkSessions Update for a live probe: the proxy reads the
+ * sockets right now and returns ground truth, one billable Action per click (no polling).
  */
-export function ConnectionsPanel({ sessions }: { sessions: DeviceSessionStatus[] }) {
+export function ConnectionsPanel({
+  sessions,
+  onCheckNow,
+  checking = false,
+  lastChecked = null,
+}: {
+  sessions: DeviceSessionStatus[];
+  onCheckNow?: () => void;
+  checking?: boolean;
+  lastChecked?: string | null;
+}) {
   return (
     <Panel legend="Persistent connections">
+      {onCheckNow && (
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <span className="readout text-[10px] uppercase tracking-[0.12em] text-ink-faint">
+            {lastChecked ? `live · checked ${formatClock(lastChecked)}` : "last reported state"}
+          </span>
+          <Button
+            className="btn-hard font-mono text-[10px] tracking-[0.12em] uppercase"
+            variant="outline"
+            size="xs"
+            disabled={checking}
+            onClick={onCheckNow}
+          >
+            {checking ? "Checking…" : "Check Now"}
+          </Button>
+        </div>
+      )}
       <table className="w-full border-collapse">
         <thead>
           <tr className="border-b border-ink/60 text-left">
@@ -39,6 +67,13 @@ export function ConnectionsPanel({ sessions }: { sessions: DeviceSessionStatus[]
           </tr>
         </thead>
         <tbody>
+          {sessions.length === 0 && (
+            <tr>
+              <td colSpan={5} className="readout py-3 text-center text-[10px] text-ink-faint">
+                no session reported yet — hit Check Now for a live probe
+              </td>
+            </tr>
+          )}
           {sessions.map((s) => (
             <tr key={s.deviceId} className="border-b border-hairline/70">
               <td className="readout py-1.5 pr-2 text-[11px] font-medium">{s.deviceId}</td>
