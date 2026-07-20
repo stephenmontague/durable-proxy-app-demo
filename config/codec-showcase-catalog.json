@@ -1,0 +1,58 @@
+[
+  {
+    "allowDuplicates": true,
+    "businessIdField": "sensorId",
+    "cloudEndpoint": "/api/temp-readings",
+    "codec": "json",
+    "direction": "EDGE_TO_CLOUD",
+    "type": "TEMP_READING"
+  },
+  {
+    "allowDuplicates": false,
+    "businessIdField": "pickId",
+    "cloudEndpoint": null,
+    "codec": "json",
+    "direction": "CLOUD_TO_EDGE",
+    "type": "PICK_TASK"
+  },
+  {
+    "allowDuplicates": false,
+    "businessIdField": "pickId",
+    "cloudEndpoint": "/api/pick-results",
+    "codec": "json",
+    "direction": "EDGE_TO_CLOUD",
+    "type": "PICK_RESULT"
+  },
+  {
+    "allowDuplicates": false,
+    "businessIdField": null,
+    "cloudEndpoint": null,
+    "codec": "raw",
+    "direction": "CLOUD_TO_EDGE",
+    "type": "LAB_ORDER"
+  },
+  {
+    "allowDuplicates": false,
+    "businessIdField": null,
+    "cloudEndpoint": "/api/lab-results",
+    "codec": "raw",
+    "direction": "EDGE_TO_CLOUD",
+    "type": "LAB_RESULT"
+  },
+  {
+    "allowDuplicates": false,
+    "businessIdField": "reportId",
+    "cloudEndpoint": null,
+    "codec": "xml",
+    "direction": "CLOUD_TO_EDGE",
+    "type": "REPORT_REQUEST"
+  },
+  {
+    "allowDuplicates": false,
+    "businessIdField": "reportId",
+    "cloudEndpoint": "/api/report-upload",
+    "codec": "xml",
+    "direction": "EDGE_TO_CLOUD",
+    "type": "REPORT_UPLOAD"
+  }
+]

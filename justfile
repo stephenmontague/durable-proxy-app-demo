@@ -223,6 +223,20 @@ demo-apply-config file="config/sample-routes.json":
         -H 'content-type: application/json' \
         --data-binary @{{file}} | jq .
 
+# Reset to the codec-showcase demo: one codec per transport, all four lanes.
+# JSON over HTTP (WMS-HANDHELD-1), CSV/raw over TCP-MLLP (LAB-ANALYZER-1), XML over
+# FTP (POS-STORE-42), plus the FACTORY-SENSOR-1 persistent TCP session. Runtime only,
+# no restart. Run before a demo to reload a clean, known-good state.
+demo-reset:
+    @echo ">> Resetting to the codec-showcase demo (7 types, 4 devices) ..."
+    curl -fsS -X POST localhost:{{cloud_port}}/control/import-catalog \
+        -H 'content-type: application/json' \
+        --data-binary @config/codec-showcase-catalog.json | jq -c '{accepted, version}'
+    curl -fsS -X POST localhost:{{cloud_port}}/control/apply-config \
+        -H 'content-type: application/json' \
+        --data-binary @config/codec-showcase-routes.json | jq -c '{accepted, version}'
+    @echo ">> Reset complete: TCP=CSV(raw), HTTP=JSON, FTP=XML, + FACTORY-SENSOR-1 persistent session."
+
 # Define a new message type at runtime — no code, no restart
 demo-catalog:
     @echo ">> Defining a custom message type DIAGNOSTICS_UPLOAD (xml codec, edge->cloud) ..."
