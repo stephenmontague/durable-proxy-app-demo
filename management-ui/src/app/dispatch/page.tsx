@@ -123,7 +123,10 @@ export default function DispatchPage() {
       ) : (
         <div className="grid gap-7 md:grid-cols-3">
           {dispatchable.map((entry) => (
-            <DispatchCard key={entry.type} entry={entry} />
+            <DispatchCard
+              key={`${entry.type}:${entry.codec}:${entry.businessIdField ?? ""}`}
+              entry={entry}
+            />
           ))}
         </div>
       )}
