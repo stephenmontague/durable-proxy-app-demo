@@ -1,8 +1,5 @@
 package com.dummyedge;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
 import org.apache.ftpserver.ftplet.DefaultFtplet;
@@ -25,9 +22,10 @@ import java.nio.file.Path;
 import java.util.List;
 
 /**
- * FTP channel of the device: the proxy uploads REPORT_REQUEST files into the watched
- * folder; the device reads them and pushes the paired REPORT_UPLOAD into the
- * proxy's FTP ingress folder.
+ * FTP channel of the device: the proxy uploads a file into the watched folder; the device reads it
+ * and echoes the same bytes back into the proxy's FTP return folder — so a type defined purely by
+ * config round-trips over FTP in any wire format (JSON, XML, CSV/raw), with no code change. The wire
+ * format is the proxy's per-type codec's concern, so the device never parses the payload.
  */
 @Component
 public class FtpDeviceServer implements SmartLifecycle {
@@ -37,7 +35,6 @@ public class FtpDeviceServer implements SmartLifecycle {
     private final EdgeProperties properties;
     private final ReceivedStore receivedStore;
     private final ConfirmPusher confirmPusher;
-    private final ObjectMapper mapper = new ObjectMapper();
     private FtpServer server;
 
     public FtpDeviceServer(EdgeProperties properties, ReceivedStore receivedStore,
@@ -105,19 +102,13 @@ public class FtpDeviceServer implements SmartLifecycle {
         try {
             Path file = Path.of(properties.ftpRoot()).toAbsolutePath().resolve(relative);
             String payload = Files.readString(file, StandardCharsets.UTF_8);
-            log.info("device received report request via FTP {}: {}", filename, payload.trim());
+            log.info("device received file via FTP {}: {}", filename, payload.trim());
             receivedStore.add("FTP", folder, payload);
             Files.deleteIfExists(file);
 
-            JsonNode body = mapper.readTree(payload);
-            ObjectNode confirm = mapper.createObjectNode();
-            confirm.set("reportId", body.get("reportId"));
-            confirm.set("kind", body.get("kind"));
-            confirm.put("rows", 42);
-            confirm.put("status", "UPLOADED");
-            confirmPusher.pushFtpReportUpload(
-                    "REPORT_UPLOAD-" + body.get("reportId").asText() + ".json",
-                    confirm.toString());
+            // Echo the bytes back verbatim — the wire format (JSON/XML/CSV) is the proxy codec's job,
+            // so the device must not parse it. Filename is cosmetic: the proxy routes FTP by folder.
+            confirmPusher.pushFtpEcho(filename, payload);
         } catch (IOException e) {
             log.error("device failed to process FTP drop {}", relative, e);
         }

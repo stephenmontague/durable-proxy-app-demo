@@ -59,8 +59,9 @@ public class ConfirmPusher {
         schedule("TCP_ECHO", payload, this::sendTcp, 1);
     }
 
-    public void pushFtpReportUpload(String filename, String payload) {
-        schedule("REPORT_UPLOAD", payload, p -> sendFtp(filename, p), 1);
+    /** Echo an inbound cloud→edge FTP delivery back to the proxy's return folder, verbatim. */
+    public void pushFtpEcho(String filename, String payload) {
+        schedule("FTP_ECHO", payload, p -> sendFtp(filename, p), 1);
     }
 
     private interface Sender {

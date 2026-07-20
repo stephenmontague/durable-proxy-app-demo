@@ -1,0 +1,133 @@
+[
+  {
+    "baseUrl": null,
+    "bindings": [
+      {
+        "channel": {
+          "kind": "PORT",
+          "value": "6100"
+        },
+        "messageType": "LAB_ORDER",
+        "resolver": null,
+        "tcpProtocol": null,
+        "transport": "TCP"
+      },
+      {
+        "channel": {
+          "kind": "PORT",
+          "value": "6005"
+        },
+        "messageType": "LAB_RESULT",
+        "resolver": null,
+        "tcpProtocol": null,
+        "transport": "TCP"
+      }
+    ],
+    "deviceId": "LAB-ANALYZER-1",
+    "ftpPassword": null,
+    "ftpPort": null,
+    "ftpUser": null,
+    "host": "localhost",
+    "tcpProtocol": {
+      "ackReply": "<VT>MSA|AA|{activityId}<FS><CR>",
+      "awaitReply": true,
+      "endDelimiter": "<FS><CR>",
+      "expectedAck": "MSA|AA",
+      "nakReply": "<VT>MSA|AE|{reason}<FS><CR>",
+      "startDelimiter": "<VT>"
+    },
+    "tcpSession": null
+  },
+  {
+    "baseUrl": null,
+    "bindings": null,
+    "deviceId": "FACTORY-SENSOR-1",
+    "ftpPassword": null,
+    "ftpPort": null,
+    "ftpUser": null,
+    "host": "localhost",
+    "tcpProtocol": null,
+    "tcpSession": {
+      "correlation": null,
+      "handshakeId": null,
+      "heartbeat": {
+        "expectInboundSec": null,
+        "expectReply": "PONG",
+        "missThreshold": 3,
+        "replyTimeoutMs": 5000,
+        "sendIntervalSec": 10,
+        "sendPayload": "PING"
+      },
+      "inboundType": "TEMP_READING",
+      "listenPort": null,
+      "mode": "PERSISTENT",
+      "port": 5100,
+      "resolver": null,
+      "role": "CLIENT"
+    }
+  },
+  {
+    "baseUrl": "http://localhost:8092",
+    "bindings": [
+      {
+        "channel": {
+          "kind": "PATH",
+          "value": "/pick-wave"
+        },
+        "messageType": "PICK_TASK",
+        "resolver": null,
+        "tcpProtocol": null,
+        "transport": "HTTP"
+      },
+      {
+        "channel": {
+          "kind": "PATH",
+          "value": "/pick-wave"
+        },
+        "messageType": "PICK_RESULT",
+        "resolver": null,
+        "tcpProtocol": null,
+        "transport": "HTTP"
+      }
+    ],
+    "deviceId": "WMS-HANDHELD-1",
+    "ftpPassword": null,
+    "ftpPort": null,
+    "ftpUser": null,
+    "host": null,
+    "tcpProtocol": null,
+    "tcpSession": null
+  },
+  {
+    "baseUrl": null,
+    "bindings": [
+      {
+        "channel": {
+          "kind": "FOLDER",
+          "value": "report-requests"
+        },
+        "messageType": "REPORT_REQUEST",
+        "resolver": null,
+        "tcpProtocol": null,
+        "transport": "FTP"
+      },
+      {
+        "channel": {
+          "kind": "FOLDER",
+          "value": "report-uploads"
+        },
+        "messageType": "REPORT_UPLOAD",
+        "resolver": null,
+        "tcpProtocol": null,
+        "transport": "FTP"
+      }
+    ],
+    "deviceId": "POS-STORE-42",
+    "ftpPassword": "edge",
+    "ftpPort": 2223,
+    "ftpUser": "edge",
+    "host": "127.0.0.1",
+    "tcpProtocol": null,
+    "tcpSession": null
+  }
+]
